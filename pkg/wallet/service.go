@@ -84,7 +84,7 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 		AccountID: accountID,
 		Amount:    amount,
 		Category:  category,
-		Status:    types.StatusInProgress,
+		Status:    types.PaymentStatusInProgress,
 	}
 	s.payments = append(s.payments, payment)
 	return payment, nil
@@ -121,11 +121,25 @@ func (s *Service) Reject(paymentID string) error {
 	if err != nil {
 		return err
 	}
-	payment.Status = types.StatusFail
+	payment.Status = types.PaymentStatusFail
 	account, err := s.FindAccountByID(payment.AccountID)
 	if err != nil {
 		return err
 	}
 	account.Balance += payment.Amount
 	return nil
+}
+
+func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
+	var targetPayment, err = s.FindPaymentByID(paymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	newPayment, err := s.Pay(targetPayment.AccountID, targetPayment.Amount, targetPayment.Category)
+	if err != nil {
+		return nil, err
+	}
+
+	return newPayment, nil
 }
