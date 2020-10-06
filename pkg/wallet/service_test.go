@@ -130,3 +130,25 @@ func TestService_Reject_paymentNotFound(t *testing.T) {
 		t.Errorf("Found payment by ID: %v", paymentID)
 	}
 }
+
+func TestService_Repeat_success(t *testing.T) {
+	s := newTestService()
+
+	account, err := s.addAccountWithBalance("9127660305", 100)
+	if err != nil {
+		t.Errorf("account => %v", account)
+		return
+	}
+
+	payment, err := s.Pay(account.ID, 10, "some")
+	if err != nil {
+		t.Errorf("payment => %v", payment)
+		return
+	}
+
+	newPayment, err := s.Repeat(payment.ID)
+	if err != nil {
+		t.Errorf("newPayment => %v", newPayment)
+		return
+	}
+}
